@@ -1,0 +1,3 @@
+ligne 10064 et quelque (manque un espace entre le nombre de sommet et de liaison)
+ligne 59096 et quelque (idem)
+arret 693393 -- OSError: [Errno 22] Invalid argument: 'data\\15446_[(1->4)-alpha-D-galacturonosyl]n.txt'
