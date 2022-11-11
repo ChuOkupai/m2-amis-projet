@@ -1,0 +1,5 @@
+{"chebi_url": ["https://ftp.ebi.ac.uk/pub/databases/chebi/SDF/ChEBI_lite.sdf.gz", 
+"https://ftp.ebi.ac.uk/pub/databases/chebi/SDF/ChEBI_lite_3star.sdf.gz"], 
+"path_compressed_file": ["C:/Users/PC/Desktop/ModuleProjet/recuperer/lite.sdf.gz", "C:/Users/PC/Desktop/ModuleProjet/recuperer/3star.sdf.gz"], 
+"path_final_file": ["C:/Users/PC/Desktop/ModuleProjet/recuperer/lite.txt", "C:/Users/PC/Desktop/ModuleProjet/recuperer/3star.txt"], 
+"local_backup_file": ["C:/Users/PC/Desktop/ModuleProjet/molecules_TEST.txt"]}
