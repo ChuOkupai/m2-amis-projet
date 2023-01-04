@@ -1,5 +1,6 @@
 # Project related files
 data/database.db
+data/chebi*
 
 # Prerequisites
 *.d
