@@ -1,6 +1,6 @@
 NAME		:= libnauty.a
 BUILD_DIR	:= .build
-INCS_DIR	:= includes
+INCS_DIR	:= includes ../nauty2_8_6
 SRCS_DIR	:= srcs
 CC			:= gcc
 CFLAGS		:= -Wall -Wextra -O2 -DNDEBUG -MMD -MP -I $(INCS_DIR)
