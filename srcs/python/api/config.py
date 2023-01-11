@@ -31,6 +31,7 @@ class Config:
 			IOError: If the file cannot be opened. TODO : problem in test to catch error instead of exception
 			ParseError: If the file cannot be parsed.
 		"""
+		jsonFile = None
 		# TODO: Test Load the configuration from path. Illegal keys and values should be ignored.
 		try :
 			if exists(path) :
@@ -45,9 +46,10 @@ class Config:
 		except (FileNotFoundError, OSError) :
 			raise Exception("IOError") from None
 		except (ParserError, Exception):
-			jsonFile.close()
 			raise Exception("ParserError")
-		jsonFile.close()
+		finally :
+			if jsonFile:
+				jsonFile.close()
 
 	def all() -> dict:
 		"""Gets all configuration parameters.
@@ -88,11 +90,12 @@ class Config:
 			jsonFile = open(constants.CONFIG_PATH, "w")
 		except (OSError, Exception):
 			raise Exception("IOError")
-		data = {}
-		for key, param in Config._params.items():
-			data[key] = {"default": param.default, "value": param.value}
-		json.dump(data, jsonFile)
-		jsonFile.close()
+		else :
+			data = {}
+			for key, param in Config._params.items():
+				data[key] = {"default": param.default, "value": param.value}
+			json.dump(data, jsonFile)
+			jsonFile.close()
 		
 
 	@staticmethod
