@@ -120,18 +120,25 @@ class ChebiDatabase:
 		# TODO: Test for Open the file from CHEBI_DATABASE_PATH and store the file object
 		try :
 			self.file = open(constants.CHEBI_DATABASE_PATH, 'r')
-			self.file.close() # TODO: Move to the end process in next
+			
 		except Exception:
 			self.file.close()
 			raise Exception("IOError")
 
+	def __del__(self):
+		"""Close the ChEBI database file."""
+		self.file.close()
 
 	def __iter__(self):
 		"""Iterate over the molecules in the ChEBI database.
-
+		
 		Returns:
 			An iterator.
 		"""
+		self.tab = self.file.readlines()
+		self.head = -1			# Reading head
+		self.current_mol = -1	# Begin current molecule
+		self.next_mol = 0		# Next molecule
 		return self
 
 	def __next__(self) -> Molecule:
@@ -145,5 +152,80 @@ class ChebiDatabase:
 			StopIteration: If there are no more molecules.
 		"""
 		# TODO: Implement a parser for the SDF format.
-		return Molecule(0, "Molecule")
+		if self.next_mol == len(self.tab):
+			raise StopIteration
+		try :
+			# new reading head
+			self.current_mol = self.next_mol
+			self.head = self.next_mol
+			# Search for the next tag
+			self.next_mol = self.search_tag("$$$$", len(self.tab))+1
+			# Search name and ID
+			chebi_id = None
+			name = None
+			self.head = self.search_tag("> <ChEBI ID>", self.next_mol)
+			if self.head < self.next_mol :
+				line = self.tab[self.head+1].split()
+				line = line[0].split(':')
+				chebi_id = line[1]
+			else :
+				raise Exception("id", self.head, self.next_mol)
+			self.head = self.current_mol
+			self.head = self.search_tag("> <ChEBI Name>", self.next_mol)
+			if self.head < self.next_mol :
+				name = self.tab[self.head+1][:-1]
+			else :
+				raise Exception("name")
+			# Create Molecule
+			mol = Molecule(chebi_id, name)
+			# Search for the nodes
+			atom_begin = self.current_mol+4
+			nb_nodes = self.read_nodes(atom_begin, mol)
+			# Search for the bonds
+			bond_begin = self.current_mol+4+nb_nodes
+			self.read_bonds(bond_begin, mol)
+			
+		except Exception as e:
+			raise Exception("ParsingError", self.current_mol, e.args)
+		return mol
 
+	def search_tag(self, tag, limit: int):
+		"""Get the next line with the tag after the reading head and before the limit line.
+
+		Returns:
+			A line number.
+		"""
+		i = self.head
+		while tag not in self.tab[i] and i<limit:
+			i += 1
+		return i
+
+	def read_nodes(self, begin: int, mol: Molecule):
+		"""Add atoms to the molecule mol.
+		Read after the begin line while line have the atom format.
+
+		Returns:
+			The number of atoms.
+		"""
+		i = begin
+		line = self.tab[i].split()
+		while len(line)>=13:
+			mol.add_atom(line[3])
+			i += 1
+			line = self.tab[i].split()
+		return i - begin
+
+	def read_bonds(self, begin: int, mol: Molecule):
+		"""Add bonds to the molecule mol.
+		Read after the begin line while line have the bond format.
+
+		Returns:
+			The number of bonds.
+		"""
+		i = begin
+		line = self.tab[i].split()
+		while len(line)>=6:
+			mol.add_bond(line[0:3])
+			i += 1
+			line = self.tab[i].split()
+		return i - begin
