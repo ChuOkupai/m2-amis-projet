@@ -2,7 +2,7 @@ from python.common import constants
 from python import datamining as dm
 from python.api import config
 
-from os.path import exists
+from os.path import exists, join
 
 def sync_database():
 	"""Update the database.
@@ -54,14 +54,19 @@ def sync_database():
 			chebi_db = dm.ChebiDatabase()
 			nb_mol = 0
 			for mol in chebi_db:
-				mol.to_file()
-				nb_mol += 1
-				# TODO: Use the database module to insert the molecules in the database
-				# TODO: Use the nauty module to find the isomorphic sets
+				path = mol.to_file()
+				if path : # Check if the molecule are written
+					nb_mol += 1
+					# TODO: Use the database module to insert the molecules in the database
+					# TODO: Use the nauty module to find the isomorphic sets
+				else : # Log the event
+					f = open(join("molecule.log"),"a")  #TODO: Change the name, add to constants or change the process
+					f.write("Not writed :"+str(mol.identifier)+"\n")
+					f.close()
 			dm.ChebiDatabase.clear_cache()
 			return nb_mol
 		except Exception as e:
-			raise Exception(e.args)
+			raise e
 	else :
 		return 0
 
