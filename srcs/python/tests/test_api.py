@@ -1,5 +1,10 @@
 import unittest
 from python import api
+from python.common import constants
+from python.datamining import ChebiArchive as ChA
+
+from os import listdir
+from os.path import isdir, isfile, join
 
 class TestApi(unittest.TestCase):
 	"""This class contains the unit tests for the API module."""
@@ -8,7 +13,7 @@ class TestApi(unittest.TestCase):
 		"""this test is for the Config class method load"""
 		conf = api.Config()
 		conf.load()
-		self.assertEqual(len(conf._params.keys()),2) # TODO: change the test
+		self.assertGreater(len(conf._params.keys()),0)
 
 	def test_load_Error(self):
 		"""this test is for the error in the Config class method load"""
@@ -20,10 +25,8 @@ class TestApi(unittest.TestCase):
 		"""this test is for the Config class method get"""
 		conf = api.Config()
 		conf.load()
-		expect_value = "0xffff" # TODO: change the test
 		expect_default = "0xaaaa"
 		extract = conf.get("test")
-		self.assertEqual(extract.value, expect_value)
 		self.assertEqual(extract.default, expect_default)
 
 	def test_set_Error(self):
@@ -33,4 +36,52 @@ class TestApi(unittest.TestCase):
 		with self.assertRaises(Exception) as context:
 			conf.set("-", "-")
 			self.assertTrue("KeyError"in context.exception)
-		# TODO: change the test
+
+	def test_save_Config(self):
+		"""this test is for the Config class method save"""
+		conf = api.Config()
+		conf.load()
+		expect_value = "0xffff"
+		changed_value = "0xtest"
+		extract = conf.get("test")
+		self.assertEqual(extract.value, expect_value)
+		conf.set("test",changed_value)
+		conf.save()
+		conf2 = api.Config()
+		conf2.load()
+		extract = conf2.get("test")
+		self.assertEqual(extract.value, changed_value)
+		conf2.set("test",expect_value)
+		conf2.save()
+
+	def test_synchronisation(self):
+		"""this test is for the synchronisation function"""
+		# Differ situation
+		if isfile(constants.CHEBI_HASH_PATH):
+			conf = api.Config()
+			conf.load()
+			ChA.download(conf.get("chebi_url").value)
+			new_hash = ChA.get_hash()
+			f = open(constants.CHEBI_HASH_PATH, "r")
+			old_hash = f.read()
+			f.close()
+			if new_hash != old_hash:
+				number = api.sync_database()
+				self.assertGreater(number, 10)
+				self.assertEqual(number, 10)
+			else :
+				number = api.sync_database()
+				self.assertEqual(number, 0)
+		else :
+			number = api.sync_database()
+			# test the directory
+			self.assertTrue(isdir(constants.MOLECULES_PATH))
+			# Have more than 10 molecules extract
+			self.assertGreater(number, 10)
+			self.assertEqual(number, 10)
+			# Have all the files
+			count = 0
+			for path in listdir(constants.MOLECULES_PATH):
+				if isfile(join(constants.MOLECULES_PATH, path)):
+					count += 1
+			self.assertEqual(number, count)

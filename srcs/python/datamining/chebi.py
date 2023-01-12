@@ -15,7 +15,6 @@ class ChebiArchive:
 	@staticmethod
 	def clear_cache():
 		"""Clears the cache. It removes the downloaded file."""
-		# TODO: Test for Remove CHEBI_ARCHIVE_PATH.
 		if exists(constants.CHEBI_ARCHIVE_PATH):
 			remove(constants.CHEBI_ARCHIVE_PATH)
 
@@ -29,7 +28,6 @@ class ChebiArchive:
 		Raises:
 			IOError: If the file cannot be downloaded. #TODO: Error can't be raised for test part
 		"""
-		# TODO: Test for Download the file from url to CHEBI_ARCHIVE_PATH.
 		ChebiArchive.clear_cache()
 		try:
 			response = requests.get(url)
@@ -55,7 +53,6 @@ class ChebiArchive:
 		Raises:
 			IOError: If the file cannot be opened.
 		"""
-		# TODO: Test for Return the SHA-256 of the file from CHEBI_ARCHIVE_PATH.
 		BUF_SIZE = 65536
 		sha256 = hashlib.sha256()
 		try :
@@ -68,11 +65,7 @@ class ChebiArchive:
 					sha256.update(data)
 		except Exception:
 			raise Exception("IOError")
-		# TODO: move this code somewhere else
-		f = open(constants.CHEBI_HASH_PATH, "w")
-		f.write(sha256.hexdigest())
-		f.close()
-		return sha256.hexdigest() #0x6f01af629fc8e15a3f88f38c698af68722298839214eada0590218699e0c4fbf
+		return sha256.hexdigest()
 
 class ChebiDatabase:
 	"""Reads a ChEBI database as a structure-data file (SDF)."""
@@ -80,7 +73,6 @@ class ChebiDatabase:
 	@staticmethod
 	def clear_cache():
 		"""Clears the cache. It removes the extracted file."""
-		# TODO: Test for Remove CHEBI_DATABASE_PATH.
 		if exists(constants.CHEBI_DATABASE_PATH):
 			remove(constants.CHEBI_DATABASE_PATH)
 
@@ -91,7 +83,6 @@ class ChebiDatabase:
 		Raises:
 			IOError: If the file cannot be extracted.
 		"""
-		# TODO: Test for Extract the file from CHEBI_ARCHIVE_PATH to CHEBI_DATABASE_PATH.
 		# TODO: Remove the downloaded file (did that mean the CHEBI_ARCHIVE one?)
 		f_in, f_out = None, None
 		try:
@@ -102,13 +93,11 @@ class ChebiDatabase:
 					shutil.copyfileobj(f_in, f_out)
 			f_in.close()
 			f_out.close()
-			#print("succesful decompress of the file ")
 		except Exception:
 			if f_in : 
 				f_in.close()
 			if f_out : 
 				f_out.close()
-			#print("Error in decompressing file \n")
 			raise Exception("IOError")
 
 	def __init__(self):
@@ -117,10 +106,9 @@ class ChebiDatabase:
 		Raises:
 			IOError: If the file cannot be opened.
 		"""
-		# TODO: Test for Open the file from CHEBI_DATABASE_PATH and store the file object
+		# TODO: Store the file object (What did that mean?)
 		try :
 			self.file = open(constants.CHEBI_DATABASE_PATH, 'r')
-			
 		except Exception:
 			self.file.close()
 			raise Exception("IOError")
@@ -151,7 +139,6 @@ class ChebiDatabase:
 			ParserError: If an error occurs while parsing the file.
 			StopIteration: If there are no more molecules.
 		"""
-		# TODO: Implement a parser for the SDF format.
 		if self.next_mol == len(self.tab):
 			raise StopIteration
 		try :

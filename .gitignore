@@ -1,6 +1,7 @@
 # Project related files
 data/database.db
 data/chebi*
+data/molecules/
 
 # Prerequisites
 *.d

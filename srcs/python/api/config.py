@@ -32,7 +32,7 @@ class Config:
 			ParseError: If the file cannot be parsed.
 		"""
 		jsonFile = None
-		# TODO: Test Load the configuration from path. Illegal keys and values should be ignored.
+		# TODO: Complete the test. Illegal keys and values should be ignored.
 		try :
 			if exists(path) :
 				jsonFile = open(path, "r")
@@ -45,7 +45,7 @@ class Config:
 				Config._params[key] = ParamValue(type(param["value"]), param["default"], param["value"])
 		except (FileNotFoundError, OSError) :
 			raise Exception("IOError") from None
-		except (ParserError, Exception):
+		except (ParserError, KeyError, Exception):
 			raise Exception("ParserError")
 		finally :
 			if jsonFile:
@@ -72,7 +72,6 @@ class Config:
 		Raises:
 			KeyError: If the key is not found.
 		"""
-		# TODO: Test Return the value of the parameter.
 		if key in Config._params.keys():
 			return Config._params.get(key)
 		else :
@@ -85,7 +84,6 @@ class Config:
 		Raises:
 			IOError: If the file cannot be opened.
 		"""
-		# TODO: Test Save the configuration to CONFIG_PATH.
 		try :
 			jsonFile = open(constants.CONFIG_PATH, "w")
 		except (OSError, Exception):
@@ -110,7 +108,6 @@ class Config:
 			KeyError: If the key is not found.
 			TypeError: If the type of the value is not correct.
 		"""
-		# TODO: Set the value of the parameter.
 		if key in Config._params.keys():
 			old_param = Config._params.get(key)
 			if isinstance(value, old_param.type):
