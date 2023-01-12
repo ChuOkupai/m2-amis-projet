@@ -1,8 +1,9 @@
-from python.common import constants
-from python import datamining as dm
-from python.api import config
-
 from os.path import exists, join
+
+from python.datamining import ChebiArchive, ChebiDatabase, Molecule
+from python.api import config
+from python.common import constants
+
 
 def sync_database():
 	"""Update the database.
@@ -25,50 +26,63 @@ def sync_database():
 	sync = False
 	try :
 		# When the hash file exist or not
+		ChebiArchive.download(conf.get("chebi_url").value)
 		if exists(constants.CHEBI_HASH_PATH):
-			dm.ChebiArchive.download(conf.get("chebi_url").value)
 			# Compare hash
-			new_hash = dm.ChebiArchive.get_hash()
+			new_hash = ChebiArchive.get_hash()
 			f = open(constants.CHEBI_HASH_PATH, "r")
 			old_hash = f.read()
 			f.close()
 			if new_hash != old_hash:
-				dm.ChebiDatabase.extract()
+				ChebiDatabase.extract()
 				sync = True
 		else :
-			dm.ChebiArchive.download(conf.get("chebi_url").value)
 			# Write hash file
 			f = open(constants.CHEBI_HASH_PATH, "w")
-			f.write(dm.ChebiArchive.get_hash())
+			f.write(ChebiArchive.get_hash())
 			f.close()
 			# Extract Database
-			dm.ChebiDatabase.extract()
+			ChebiDatabase.extract()
 			sync = True
-		# Erase the archive file
-		dm.ChebiArchive.clear_cache()
 	except Exception:
 		raise Exception("IOError")
 	# If the database change, synchronisation
 	if sync:
 		try :
-			chebi_db = dm.ChebiDatabase()
+			chebi_db = ChebiDatabase()
 			nb_mol = 0
 			for mol in chebi_db:
-				path = mol.to_file()
-				if path : # Check if the molecule are written
+				if update_molecule(mol):
 					nb_mol += 1
-					# TODO: Use the database module to insert the molecules in the database
-					# TODO: Use the nauty module to find the isomorphic sets
-				else : # Log the event
-					f = open(join("molecule.log"),"a")  #TODO: Change the name, add to constants or change the process
-					f.write("Not writed :"+str(mol.identifier)+"\n")
-					f.close()
-			dm.ChebiDatabase.clear_cache()
+			ChebiDatabase.clear_cache()
 			return nb_mol
 		except Exception as e:
 			raise e
 	else :
 		return 0
+
+def update_molecule(mol: Molecule) ->bool:
+	"""Update one molecule on the database.
+
+	Returns:
+		If the molecule is updated, it returns True
+		Else it return False
+
+	Raises:
+		IOError: If the molecule file cannot be writed.
+	"""
+	if mol.identifier == "test" :# TODO: Test if molecule identifier in database
+		if mol.get_hash() == "test" :# TODO: Test if hash equal
+			return False
+	# Write the molecule file
+	path = mol.to_file()
+	if path : # Check if the molecule are written
+		# TODO: Use the database module to insert the molecules in the database
+		mol.identifier
+		mol.name
+		mol.get_hash()
+		# TODO: Use the nauty module to find the isomorphic sets
+	return True
 
 def generate_molecules_distribution():
 	"""Generates the molecules distribution.

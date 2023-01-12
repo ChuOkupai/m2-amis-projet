@@ -1,12 +1,12 @@
-from python.datamining.molecule import Molecule
-from python.common import constants
-
+import gzip
+import hashlib
+import shutil
 from os import remove
 from os.path import exists
-import gzip
-import shutil
+
 import requests
-import hashlib
+from python.common import constants
+from python.datamining.molecule import Molecule
 
 
 class ChebiArchive:
@@ -83,7 +83,6 @@ class ChebiDatabase:
 		Raises:
 			IOError: If the file cannot be extracted.
 		"""
-		# TODO: Remove the downloaded file (did that mean the CHEBI_ARCHIVE one?)
 		f_in, f_out = None, None
 		try:
 			if not exists(constants.CHEBI_ARCHIVE_PATH):
@@ -93,11 +92,10 @@ class ChebiDatabase:
 					shutil.copyfileobj(f_in, f_out)
 			f_in.close()
 			f_out.close()
+			ChebiArchive.clear_cache()
 		except Exception:
-			if f_in : 
-				f_in.close()
-			if f_out : 
-				f_out.close()
+			f_in.close()
+			f_out.close()
 			raise Exception("IOError")
 
 	def __init__(self):
@@ -195,11 +193,14 @@ class ChebiDatabase:
 			The number of atoms.
 		"""
 		i = begin
-		line = self.tab[i].split()
-		while len(line)>=13:
-			mol.add_atom(line[3])
+		line = self.tab[i]
+		while len(line)>=69:
+			elem = line[31:34].replace(' ','')
+			if elem == "":
+				elem = "*"
+			mol.add_atom(elem)
 			i += 1
-			line = self.tab[i].split()
+			line = self.tab[i]
 		return i - begin
 
 	def read_bonds(self, begin: int, mol: Molecule):
@@ -210,9 +211,13 @@ class ChebiDatabase:
 			The number of bonds.
 		"""
 		i = begin
-		line = self.tab[i].split()
-		while len(line)>=6:
-			mol.add_bond(line[0:3])
+		ignored = 0
+		line = self.tab[i]
+		while len(line)>=21:
+			bond = [line[0:3].replace(' ',''),line[3:6].replace(' ',''),line[6:9].replace(' ','')]
+			if bond[0]!='M':
+				mol.add_bond(bond)
+				ignored +=1
 			i += 1
-			line = self.tab[i].split()
-		return i - begin
+			line = self.tab[i]
+		return i - begin - ignored

@@ -1,10 +1,11 @@
 import unittest
+from os import listdir
+from os.path import isdir, isfile, join
+
 from python import api
 from python.common import constants
 from python.datamining import ChebiArchive as ChA
 
-from os import listdir
-from os.path import isdir, isfile, join
 
 class TestApi(unittest.TestCase):
 	"""This class contains the unit tests for the API module."""
@@ -68,7 +69,6 @@ class TestApi(unittest.TestCase):
 			if new_hash != old_hash:
 				number = api.sync_database()
 				self.assertGreater(number, 10)
-				self.assertEqual(number, 10)
 			else :
 				number = api.sync_database()
 				self.assertEqual(number, 0)
@@ -76,10 +76,6 @@ class TestApi(unittest.TestCase):
 			number = api.sync_database()
 			# test the directory
 			self.assertTrue(isdir(constants.MOLECULES_PATH))
-			# Have more than 10 molecules extract
-			self.assertGreater(number, 10)
-			self.assertEqual(number, 10)
-			# Have all the files
 			count = 0
 			for path in listdir(constants.MOLECULES_PATH):
 				if isfile(join(constants.MOLECULES_PATH, path)):

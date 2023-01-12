@@ -1,8 +1,9 @@
-from python.common import constants
-
 import json
 from os.path import exists
 from parser import ParserError
+
+from python.common import constants
+
 
 class ParamValue:
 	"""A configuration parameter value."""
