@@ -1,5 +1,5 @@
 import unittest
-from os import listdir
+from os import listdir, remove
 from os.path import isdir, isfile, join
 
 from python import api
@@ -18,9 +18,8 @@ class TestApi(unittest.TestCase):
 
 	def test_load_Error(self):
 		"""this test is for the error in the Config class method load"""
-		with self.assertRaises(Exception) as context:
+		with self.assertRaises(IOError):
 			api.Config.load("data/testFail.txt")
-			self.assertTrue('IOError' in context.exception)
 
 	def test_get_Config(self):
 		"""this test is for the Config class method get"""
@@ -34,9 +33,10 @@ class TestApi(unittest.TestCase):
 		"""this test is for the error in the Config class method set"""
 		conf = api.Config()
 		conf.load()
-		with self.assertRaises(Exception) as context:
+		with self.assertRaises(KeyError):
 			conf.set("-", "-")
-			self.assertTrue("KeyError"in context.exception)
+		with self.assertRaises(TypeError):
+			conf.set("test", 3)
 
 	def test_save_Config(self):
 		"""this test is for the Config class method save"""
@@ -66,18 +66,16 @@ class TestApi(unittest.TestCase):
 			f = open(constants.CHEBI_HASH_PATH, "r")
 			old_hash = f.read()
 			f.close()
-			if new_hash != old_hash:
-				number = api.sync_database()
-				self.assertGreater(number, 10)
-			else :
+			if new_hash == old_hash:
 				number = api.sync_database()
 				self.assertEqual(number, 0)
-		else :
-			number = api.sync_database()
-			# test the directory
-			self.assertTrue(isdir(constants.MOLECULES_PATH))
-			count = 0
-			for path in listdir(constants.MOLECULES_PATH):
-				if isfile(join(constants.MOLECULES_PATH, path)):
-					count += 1
-			self.assertEqual(number, count)
+				# Force the resync
+				remove(constants.CHEBI_HASH_PATH)
+		number = api.sync_database()
+		# test the directory
+		self.assertTrue(isdir(constants.MOLECULES_PATH))
+		count = 0
+		for path in listdir(constants.MOLECULES_PATH):
+			if isfile(join(constants.MOLECULES_PATH, path)):
+				count += 1
+		self.assertEqual(number, count)

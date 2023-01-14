@@ -29,25 +29,28 @@ class Config:
 		"""Loads the configuration from the configuration file in JSON format.
 
 		Raises:
-			IOError: If the file cannot be opened. TODO : problem in test to catch error instead of exception
+			IOError: If the file cannot be opened.
 			ParseError: If the file cannot be parsed.
+			KeyError: If the param have not the correct keys (value and default).
 		"""
 		jsonFile = None
-		# TODO: Complete the test. Illegal keys and values should be ignored.
 		try :
 			if exists(path) :
 				jsonFile = open(path, "r")
 			else :
 				raise FileNotFoundError
 			data = json.load(jsonFile)
+		except (FileNotFoundError, OSError) :
+			if jsonFile:
+				jsonFile.close()
+			raise IOError
+		try :
 			for key, param in data.items():
 				if not isinstance(param, dict):
 					raise ParserError
 				Config._params[key] = ParamValue(type(param["value"]), param["default"], param["value"])
-		except (FileNotFoundError, OSError) :
-			raise Exception("IOError") from None
-		except (ParserError, KeyError, Exception):
-			raise Exception("ParserError")
+		except KeyError:
+			raise KeyError(key)
 		finally :
 			if jsonFile:
 				jsonFile.close()
@@ -76,7 +79,7 @@ class Config:
 		if key in Config._params.keys():
 			return Config._params.get(key)
 		else :
-			raise Exception("KeyError")
+			raise KeyError
 
 	@staticmethod
 	def save():
@@ -87,8 +90,8 @@ class Config:
 		"""
 		try :
 			jsonFile = open(constants.CONFIG_PATH, "w")
-		except (OSError, Exception):
-			raise Exception("IOError")
+		except (OSError, FileNotFoundError, Exception):
+			raise IOError
 		else :
 			data = {}
 			for key, param in Config._params.items():
@@ -114,6 +117,6 @@ class Config:
 			if isinstance(value, old_param.type):
 				Config._params[key] = ParamValue(type=type(value), default=old_param.default, value=value)
 			else : 
-				raise Exception("TypeError")
+				raise TypeError
 		else :
-			raise Exception("KeyError")
+			raise KeyError

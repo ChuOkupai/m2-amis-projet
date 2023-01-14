@@ -25,39 +25,42 @@ def sync_database():
 	conf.load()
 	sync = False
 	try :
-		# When the hash file exist or not
 		ChebiArchive.download(conf.get("chebi_url").value)
+		# When the hash file exist or not
 		if exists(constants.CHEBI_HASH_PATH):
 			# Compare hash
 			new_hash = ChebiArchive.get_hash()
-			f = open(constants.CHEBI_HASH_PATH, "r")
-			old_hash = f.read()
-			f.close()
+			with open(constants.CHEBI_HASH_PATH, "r") as f:
+				old_hash = f.read()
+				f.close()
 			if new_hash != old_hash:
+				# Write hash file
+				with open(constants.CHEBI_HASH_PATH, "w") as f:
+					f.write(new_hash)
+					f.close()
+				# Extract Database
 				ChebiDatabase.extract()
 				sync = True
 		else :
 			# Write hash file
-			f = open(constants.CHEBI_HASH_PATH, "w")
-			f.write(ChebiArchive.get_hash())
-			f.close()
+			with open(constants.CHEBI_HASH_PATH, "w") as f:
+				f.write(ChebiArchive.get_hash())
+				f.close()
 			# Extract Database
 			ChebiDatabase.extract()
 			sync = True
-	except Exception:
-		raise Exception("IOError")
+	except (OSError, FileNotFoundError, IOError):
+		raise IOError
 	# If the database change, synchronisation
 	if sync:
-		try :
-			chebi_db = ChebiDatabase()
-			nb_mol = 0
-			for mol in chebi_db:
-				if update_molecule(mol):
-					nb_mol += 1
-			ChebiDatabase.clear_cache()
-			return nb_mol
-		except Exception as e:
-			raise e
+		# This part let raise IOError and ParserError if its occur
+		chebi_db = ChebiDatabase()
+		nb_mol = 0
+		for mol in chebi_db:
+			if update_molecule(mol):
+				nb_mol += 1
+		ChebiDatabase.clear_cache()
+		return nb_mol
 	else :
 		return 0
 
@@ -82,7 +85,8 @@ def update_molecule(mol: Molecule) ->bool:
 		mol.name
 		mol.get_hash()
 		# TODO: Use the nauty module to find the isomorphic sets
-	return True
+		return True
+	return False
 
 def generate_molecules_distribution():
 	"""Generates the molecules distribution.

@@ -3,8 +3,10 @@ import hashlib
 import shutil
 from os import remove
 from os.path import exists
+from parser import ParserError
 
 import requests
+from requests.exceptions import RequestException, HTTPError
 from python.common import constants
 from python.datamining.molecule import Molecule
 
@@ -26,21 +28,22 @@ class ChebiArchive:
 			url: The URL to the ChEBI database.
 
 		Raises:
-			IOError: If the file cannot be downloaded. #TODO: Error can't be raised for test part
+			IOError: If the file cannot be downloaded.
 		"""
 		ChebiArchive.clear_cache()
 		try:
 			response = requests.get(url)
-		except Exception:
-			#print("Error in the chebi url or download : ",url)
-			raise Exception("IOError")
+			response.raise_for_status()
+		except RequestException as e :
+			#print("Error in the chebi url or http request : ",url)
+			raise IOError(e.args, url)
 		try:
 			f = open(constants.CHEBI_ARCHIVE_PATH, "wb")
 			f.write(response.content)
 			f.close()
-		except Exception:
+		except (OSError, Exception):
 			#print("Error in coping file \n")
-			raise Exception("IOError")
+			raise IOError
 		
 
 	@staticmethod
@@ -63,12 +66,13 @@ class ChebiArchive:
 						f.close()
 						break
 					sha256.update(data)
-		except Exception:
-			raise Exception("IOError")
+		except (OSError, FileNotFoundError, Exception):
+			raise IOError
 		return sha256.hexdigest()
 
 class ChebiDatabase:
 	"""Reads a ChEBI database as a structure-data file (SDF)."""
+	file = None
 
 	@staticmethod
 	def clear_cache():
@@ -86,17 +90,19 @@ class ChebiDatabase:
 		f_in, f_out = None, None
 		try:
 			if not exists(constants.CHEBI_ARCHIVE_PATH):
-				raise Exception("FileNotFoundError")
+				raise FileNotFoundError
 			with gzip.open(constants.CHEBI_ARCHIVE_PATH, 'rb') as f_in:
 				with open(constants.CHEBI_DATABASE_PATH, 'wb') as f_out:
 					shutil.copyfileobj(f_in, f_out)
 			f_in.close()
 			f_out.close()
 			ChebiArchive.clear_cache()
-		except Exception:
-			f_in.close()
-			f_out.close()
-			raise Exception("IOError")
+		except (OSError, FileNotFoundError, Exception) :
+			if f_in:
+				f_in.close()
+			if f_out:
+				f_out.close()
+			raise IOError
 
 	def __init__(self):
 		"""Open the ChEBI database file.
@@ -104,16 +110,17 @@ class ChebiDatabase:
 		Raises:
 			IOError: If the file cannot be opened.
 		"""
-		# TODO: Store the file object (What did that mean?)
 		try :
 			self.file = open(constants.CHEBI_DATABASE_PATH, 'r')
-		except Exception:
-			self.file.close()
-			raise Exception("IOError")
+		except (OSError, FileNotFoundError, Exception):
+			if self.file:
+				self.file.close()
+			raise IOError
 
 	def __del__(self):
 		"""Close the ChEBI database file."""
-		self.file.close()
+		if self.file:
+			self.file.close()
 
 	def __iter__(self):
 		"""Iterate over the molecules in the ChEBI database.
@@ -139,39 +146,35 @@ class ChebiDatabase:
 		"""
 		if self.next_mol == len(self.tab):
 			raise StopIteration
-		try :
-			# new reading head
-			self.current_mol = self.next_mol
-			self.head = self.next_mol
-			# Search for the next tag
-			self.next_mol = self.search_tag("$$$$", len(self.tab))+1
-			# Search name and ID
-			chebi_id = None
-			name = None
-			self.head = self.search_tag("> <ChEBI ID>", self.next_mol)
-			if self.head < self.next_mol :
-				line = self.tab[self.head+1].split()
-				line = line[0].split(':')
-				chebi_id = line[1]
-			else :
-				raise Exception("id", self.head, self.next_mol)
-			self.head = self.current_mol
-			self.head = self.search_tag("> <ChEBI Name>", self.next_mol)
-			if self.head < self.next_mol :
-				name = self.tab[self.head+1][:-1]
-			else :
-				raise Exception("name")
-			# Create Molecule
-			mol = Molecule(chebi_id, name)
-			# Search for the nodes
-			atom_begin = self.current_mol+4
-			nb_nodes = self.read_nodes(atom_begin, mol)
-			# Search for the bonds
-			bond_begin = self.current_mol+4+nb_nodes
-			self.read_bonds(bond_begin, mol)
-			
-		except Exception as e:
-			raise Exception("ParsingError", self.current_mol, e.args)
+		# new reading head
+		self.current_mol = self.next_mol
+		self.head = self.next_mol
+		# Search for the next tag
+		self.next_mol = self.search_tag("$$$$", len(self.tab))+1
+		# Search name and ID
+		chebi_id = None
+		name = None
+		self.head = self.search_tag("> <ChEBI ID>", self.next_mol)
+		if self.head < self.next_mol :
+			line = self.tab[self.head+1].split()
+			line = line[0].split(':')
+			chebi_id = line[1]
+		else :
+			raise ParserError("id",self.current_mol)
+		self.head = self.current_mol
+		self.head = self.search_tag("> <ChEBI Name>", self.next_mol)
+		if self.head < self.next_mol :
+			name = self.tab[self.head+1][:-1]
+		else :
+			raise ParserError("name",self.current_mol)
+		# Create Molecule
+		mol = Molecule(chebi_id, name)
+		# Search for the nodes
+		atom_begin = self.current_mol+4
+		nb_nodes = self.read_nodes(atom_begin, mol)
+		# Search for the bonds
+		bond_begin = self.current_mol+4+nb_nodes
+		self.read_bonds(bond_begin, mol)
 		return mol
 
 	def search_tag(self, tag, limit: int):
@@ -214,9 +217,12 @@ class ChebiDatabase:
 		ignored = 0
 		line = self.tab[i]
 		while len(line)>=21:
-			bond = [line[0:3].replace(' ',''),line[3:6].replace(' ',''),line[6:9].replace(' ','')]
+			bond = [line[0:3].replace(' ',''),
+					line[3:6].replace(' ',''),
+					line[6:9].replace(' ','')]
 			if bond[0]!='M':
 				mol.add_bond(bond)
+			else :
 				ignored +=1
 			i += 1
 			line = self.tab[i]

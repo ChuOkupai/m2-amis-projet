@@ -101,7 +101,7 @@ class Molecule:
 				f_out.write(self._bonds_to_string())
 				f_out.close()
 				return path
-			except Exception :
-				raise Exception("IOError")
+			except (OSError, Exception) :
+				raise IOError
 		# if not name or id, do nothing
 		return None
