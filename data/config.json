@@ -1,0 +1,1 @@
+{"chebi_url": {"default": "default", "value": "https://ftp.ebi.ac.uk/pub/databases/chebi/SDF/ChEBI_lite_3star.sdf.gz"}, "test": {"default": "0xaaaa", "value": "0xffff"}}
