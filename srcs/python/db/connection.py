@@ -1,6 +1,7 @@
 from peewee import SqliteDatabase
 from python.common import constants
 
+
 class Connection:
 	_instance = None
 
