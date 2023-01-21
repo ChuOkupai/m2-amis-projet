@@ -1,6 +1,8 @@
-from python.cli.command import Command
-from argparse import ArgumentParser, SUPPRESS
+from argparse import SUPPRESS, ArgumentParser
 from typing import List
+
+from python.cli.command import Command
+
 
 class QuitCommand(Command):
 	"""The exit command."""

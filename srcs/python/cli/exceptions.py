@@ -19,3 +19,15 @@ class InvalidCommandError(Exception):
 			name: The command name.
 		"""
 		super().__init__(f'{name}: Invalid arguments')
+
+
+class InvalidMoleculeError(Exception):
+	"""The invalid command error, raised when the arguments are invalid."""
+ 
+	def __init__(self, name):
+		"""Initialize the invalid command error.
+		
+		Args:
+			name: The command name.
+		"""
+		super().__init__(f'{name}: Invalid arguments')

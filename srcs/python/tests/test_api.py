@@ -54,7 +54,7 @@ class TestApi(unittest.TestCase):
 		self.assertEqual(extract.value, changed_value)
 		conf2.set("test",expect_value)
 		conf2.save()
-
+	
 	def test_synchronisation(self):
 		"""this test is for the synchronisation function"""
 		# Differ situation
@@ -79,3 +79,4 @@ class TestApi(unittest.TestCase):
 			if isfile(join(constants.MOLECULES_PATH, path)):
 				count += 1
 		self.assertEqual(number, count)
+	

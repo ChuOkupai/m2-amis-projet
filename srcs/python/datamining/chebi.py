@@ -6,9 +6,9 @@ from os.path import exists
 from parser import ParserError
 
 import requests
-from requests.exceptions import RequestException, HTTPError
 from python.common import constants
 from python.datamining.molecule import Molecule
+from requests.exceptions import RequestException
 
 
 class ChebiArchive:

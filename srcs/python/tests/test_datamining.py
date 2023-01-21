@@ -49,7 +49,7 @@ class TestDatamining(unittest.TestCase):
 		self.assertTrue(exists(constants.CHEBI_DATABASE_PATH))
 		dm.ChebiDatabase.clear_cache()
 		self.assertFalse(exists(constants.CHEBI_DATABASE_PATH))
-
+	
 	def test_chebi_database_init_error(self):
 		"""This test will test the error in ChebiDatabase init."""
 		dm.ChebiDatabase.clear_cache()
