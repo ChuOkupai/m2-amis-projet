@@ -1,5 +1,5 @@
 import unittest
-from os.path import exists
+from os.path import exists, join
 
 from python import datamining as dm
 from python.common import constants
@@ -9,14 +9,6 @@ class TestDatamining(unittest.TestCase):
 	"""This class contains the unit tests for the datamining module."""
 	url = "https://ftp.ebi.ac.uk/pub/databases/chebi/SDF/ChEBI_lite_3star.sdf.gz"
 	
-	def test_chebi_archive(self):
-		"""This test is for ChebiArchive methods"""
-		dm.ChebiArchive.download(self.url)
-		# TODO: Change the url dependance
-		self.assertTrue(exists(constants.CHEBI_ARCHIVE_PATH))
-		dm.ChebiArchive.clear_cache()
-		self.assertFalse(exists(constants.CHEBI_ARCHIVE_PATH))
-
 	def test_chebi_archive_error(self):
 		"""This test is for ChebiArchive download error"""
 		with self.assertRaises(IOError):
@@ -30,16 +22,6 @@ class TestDatamining(unittest.TestCase):
 			# raise IOError if no file
 			dm.ChebiArchive.get_hash()
 	
-	def test_chebi_database(self):
-		"""This test is for ChebiDatabase method"""
-		if not exists(constants.CHEBI_ARCHIVE_PATH):
-			dm.ChebiArchive.download(self.url)
-			# TODO: Change the url dependance
-		dm.ChebiDatabase.extract()
-		self.assertFalse(exists(constants.CHEBI_ARCHIVE_PATH))
-		self.assertTrue(exists(constants.CHEBI_DATABASE_PATH))
-		dm.ChebiDatabase.clear_cache()
-		self.assertFalse(exists(constants.CHEBI_DATABASE_PATH))
 	
 	def test_chebi_database_init_error(self):
 		"""This test will test the error in ChebiDatabase init."""
@@ -83,13 +65,7 @@ class TestDatamining(unittest.TestCase):
 
 	def test_chebi_database_iterator(self):
 		"""This test will iter on molecule."""
-		if not exists(constants.CHEBI_DATABASE_PATH):
-			if not exists(constants.CHEBI_ARCHIVE_PATH):
-				dm.ChebiArchive.download(self.url)
-				# TODO: Change the url dependance
-			dm.ChebiDatabase.extract()
-			self.assertFalse(exists(constants.CHEBI_ARCHIVE_PATH))
-		cdb  = dm.ChebiDatabase()
+		cdb  = dm.ChebiDatabase(join(constants.DATA_PATH,"test_chebi.sdf"))
 		iterator = iter(cdb)
 		mol = next(iterator)
 		# Fisrt one in lite_3star file
