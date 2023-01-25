@@ -1,13 +1,13 @@
-NAME		:= libnauty.a
+NAME		:= libnisoy.a
 BUILD_DIR	:= .build
-INCS_DIR	:= includes
+INCS_DIRS	:= includes ../nauty
 SRCS_DIR	:= srcs
 CC			:= gcc
-CFLAGS		:= -Wall -Wextra -O2 -DNDEBUG -MMD -MP -I $(INCS_DIR)
+CFLAGS		:= -Wall -Wextra -g3 -MMD -MP $(foreach dir,$(INCS_DIRS),-I $(dir))
 SRCS_EXT	:= .c
 SRCS		:= $(wildcard $(SRCS_DIR)/*$(SRCS_EXT))
 OBJS_EXT	:= .o
-OBJS		:= $(SRC:$(SRCS_DIR)/%$(SRCS_EXT)=$(BUILD_DIR)/%$(OBJS_EXT))
+OBJS		:= $(SRCS:$(SRCS_DIR)/%$(SRCS_EXT)=$(BUILD_DIR)/%$(OBJS_EXT))
 
 all: $(NAME)
 
@@ -17,7 +17,9 @@ $(NAME): $(OBJS)
 clean:
 	rm -rf $(NAME)
 
-test:
+test: $(NAME)
+	$(CC) $(CFLAGS) -o test main.c $^ ../nauty/nauty.a
+	./test ../../../data/molecules/7.txt
 
 $(BUILD_DIR):
 	mkdir $@

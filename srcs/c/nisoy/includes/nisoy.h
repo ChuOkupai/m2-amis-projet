@@ -1,35 +1,25 @@
-#include <stdbool.h>
-#include "nauty.h"
+#pragma once
+#include "nausparse.h"
 
-typedef struct molecule
-{   
-    char idChebi[10];
-    int all;
-    int nbAtoms;
-    int links;
-    graph*  adjGraph;
-    graph*  adjGraphWithMultLinks;
-    graph* simpleLink;
-    graph* multiLink;
-    char* hashSimpleLinks;
-    char* hashMultiLinks;
-   
-} molecule;
+typedef struct s_molecule
+{
+	int nbAtoms;
+	int all;
+	graph* adjGraph;
+	graph* adjGraphWithMultLinks;
+	graph* simpleLink;
+	graph* multiLink;
+	char* hashSimpleLinks;
+	char* hashMultiLinks;
+}	molecule;
 
-void genrateGraphFromFileSimpleLinks(molecule *X,char* fileName);
+/** Free a molecule structure */
+void freeMolecule(molecule* m);
 
-void genrateGraphFromFile(molecule *X,char* fileName);
-
-void genrateGraphFromFileSimpleLinks(molecule *X,char* fileName);
-
-graph* getCanonSimpleLinks(molecule X);
-
-graph* getCanonMultilinks(molecule X);
-
-molecule generateMolecule(char* fileName);
+/** Generate a molecule from a file.
+ * @param path The path to the file
+ * @returns -1 if an error occured, 0 otherwise
+ */
+int generateMolecule(const char *path);
 
 void printMolecule(molecule X);
-
-void hashSimpleLink(molecule X);
-
-void hashMultiLink(molecule X);
