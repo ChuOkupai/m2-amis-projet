@@ -35,17 +35,13 @@ class CompareCommand(Command):
             raise InvalidMoleculeError(mol1_ref+" "+mol2_ref)
         atoms_frequency, bonds_frequency = actions.compare_frequency(molecule1.id, molecule2.id)
         if (self.args.option =='mcis'):
-            print(self.args.option)
             mcis = actions.get_mcis(molecule1.id, molecule2.id)
 
-        
-        print("comparisons between molecule 1 :",mol1_ref ," and molecule2 :",mol2_ref, "  : ")
-        print("atoms frequency : ")
-        pprint(atoms_frequency)
-        print("bonds frequency : ")
-        pprint(bonds_frequency)
+        print("comparisons between molecule ",mol1_ref ," and molecule ",mol2_ref, " : ")
+        print("atoms frequency :",atoms_frequency)
+        print("bonds frequency :",bonds_frequency)
 
         if (self.args.option =='mcis'):
-            print("mcis : ", mcis)
+            print("maximum subgraph ratio :", mcis)
 
 

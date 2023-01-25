@@ -121,7 +121,7 @@ class Graph:
 		for atom, count in atoms_count2.items():
 			atoms_frequency2[atom] = count/total_atoms2
 
-		return {'G1':{'atoms':atoms_count1,'frequencies':atoms_frequency1},'G2':{'atoms':atoms_count2,'frequencies':atoms_frequency2}}
+		return {'count':[atoms_count1,atoms_count2], 'frequencies':[atoms_frequency1, atoms_frequency2]}
 
 	def get_bonds_frequency(G1, G2) -> dict:
 		"""Get the frequency of bonds in two graphs G1 and G2.
@@ -166,7 +166,7 @@ class Graph:
 		for bond, count in bonds_count2.items():
 			bonds_frequency2[bond] = count/total_bonds2
 
-		return {'G1':{'bonds':bonds_count1,'frequencies':bonds_frequency1},'G2':{'bonds':bonds_count2,'frequencies':bonds_frequency2}}
+		return {'count':[bonds_count1,bonds_count2], 'frequencies':[bonds_frequency1, bonds_frequency2]}
 	
 	def construct_mcis(G1, G2):
 		""" Construct the MCIS graph for 2 graphes.

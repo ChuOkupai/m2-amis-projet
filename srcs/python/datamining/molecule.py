@@ -8,10 +8,10 @@ from python.common import constants
 class Molecule:
 	"""A molecule."""
 
-	def __init__(self, identifier, name):
+	def __init__(self, identifier, name : str):
 		"""Initialize a molecule."""
 		self.identifier = identifier
-		self.name = name
+		self.name = name.replace(' ', '_')
 		self._atoms = []
 		self._bonds = []
 		self.hash = None

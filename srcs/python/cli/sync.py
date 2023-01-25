@@ -23,5 +23,5 @@ class SyncCommand(Command):
     def execute(self):
             nb_mol = actions.sync_database()
             if (nb_mol>0): print(nb_mol," has been updated")
-            else : print("The database is already upadted")
+            else : print("The database is already updated")
         
