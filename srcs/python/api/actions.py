@@ -1,10 +1,12 @@
+from os import remove
 from os.path import exists
+import shutil
 
 from python.api import config
-from python.cli.exceptions import InvalidMoleculeError
+from python.cli.exceptions import InvalidTableError
 from python.common import constants
 from python.datamining import ChebiArchive, ChebiDatabase, Graph, Molecule
-from python.db import queries
+from python.db import queries, Connection, Molecule as DbMol, IsomorphicSet, IsIsomorphic
 from python.similarity import Compare
 from matplotlib import pyplot as plt
 import numpy as np
@@ -115,7 +117,7 @@ def search(molecule_reference) -> list:
 	molecules = queries.find_molecules(molecule_reference)
 	if len(molecules) > 0:
 		return molecules
-	raise InvalidMoleculeError(molecule_reference)
+	raise InvalidTableError(molecule_reference)
 
 def show_distrib(multi_bound : int):
 	distrib = queries.distrib(multi_bound==1)
@@ -138,16 +140,36 @@ def find(molecule_reference) -> Molecule:
 		molecule = queries.find_molecule_by_name(molecule_reference)
 	if molecule != None:
 		return molecule
-	raise InvalidMoleculeError(molecule_reference)
-
-def list_set_isomorph_mol(molecule_reference)-> list: 
-	# Test if the molecule exists and return the list of isomorphic group of molecules
-	molecule = find(molecule_reference)
-	if (molecule is not None):
-		list_isomorphic_set=queries.list_isomorphic_sets_of_molecule(molecule.id)
-		return list_isomorphic_set # TODO : change the return format (actual SQL instruction)
+	raise InvalidTableError(molecule_reference)
 
 def list_set_isomorph()-> list: 
 	# Test if the molecule exists and return the list of isomorphic group of molecules
 		list_all_isomorphic_set=queries.list_isomorphic_sets()
 		return list_all_isomorphic_set
+
+def list_set_isomorph_of_mol(molecule_reference)-> list: 
+	# Test if the molecule exists and return the list of isomorphic group of molecules
+	molecule = find(molecule_reference)
+	if (molecule is not None):
+		list_isomorphic_set=queries.list_isomorphic_sets_of_molecule(molecule.id)
+		return list_isomorphic_set
+
+def list_mol_of_set_isomorph(set_id)-> list:
+	sets = None
+	if (set_id.isdigit()):
+		sets = queries.list_molecules_in_set(int(set_id))
+	if sets != None:
+		return sets
+	raise InvalidTableError(set_id)
+
+def clean():
+	# Erase database and datafile
+	if exists(constants.CHEBI_HASH_PATH): remove(constants.CHEBI_HASH_PATH)
+	if exists(constants.DB_PATH): remove(constants.DB_PATH)
+	if exists(constants.CHEBI_DATABASE_PATH): remove(constants.CHEBI_DATABASE_PATH)
+	if exists(constants.CHEBI_ARCHIVE_PATH): remove(constants.CHEBI_ARCHIVE_PATH)
+	if exists(constants.MOLECULES_PATH): shutil.rmtree(constants.MOLECULES_PATH)
+	# Re init the database's tables
+	db = Connection.get_instance()
+	db.create_tables([DbMol, IsIsomorphic, IsomorphicSet])
+	db.close()

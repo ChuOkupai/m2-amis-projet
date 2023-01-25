@@ -8,6 +8,7 @@ from python.cli.quit import QuitCommand
 from python.cli.sync import SyncCommand
 from python.cli.search import SearchCommand
 from python.cli.distrib import DistribCommand
+from python.cli.reset import ResetCommand
 
 
 class CommandFactory:
@@ -21,7 +22,8 @@ class CommandFactory:
 		'FIND': FindCommand,
 		'LIST' : ListIsomorphicSetCommand,
 		'SEARCH' : SearchCommand,
-		'DISTRIB' : DistribCommand
+		'DISTRIB' : DistribCommand,
+		'RESET' : ResetCommand
 	}
 
 	@staticmethod

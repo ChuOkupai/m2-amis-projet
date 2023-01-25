@@ -52,7 +52,7 @@ class Application:
 		except ParserError as e:
 			print("Unexpected format of file")
 			return 1
-		except (InvalidMoleculeError, IOError, FileNotFoundError, KeyError, TypeError) as e:
+		except (InvalidTableError, IOError, FileNotFoundError, KeyError, TypeError) as e:
 			print(e)
 			return 1
 

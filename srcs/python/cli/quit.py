@@ -1,5 +1,4 @@
-from argparse import SUPPRESS, ArgumentParser
-from typing import List
+from argparse import ArgumentParser
 
 from python.cli.command import Command
 

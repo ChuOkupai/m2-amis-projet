@@ -1,9 +1,10 @@
 from argparse import ArgumentParser
+from pprint import pprint
 
 from python.api import actions
 from python.cli.command import Command
-from pprint import pprint
 from tabulate import tabulate
+
 
 class SearchCommand(Command):
 	"""The search command."""
@@ -17,10 +18,10 @@ class SearchCommand(Command):
 		parser = ArgumentParser(
 			prog='SEARCH',
 			description="Search molecules which contains the argument string",
-			usage="Search molecules which contains the argument string",
+			usage="Give part of the molecule's name",
 			add_help=False
 		)
-		parser.add_argument('molecule_reference', type=str, help='the string for the name of the molecule')
+		parser.add_argument('molecule_reference', type=str, help="part of the molecule's name")
 		return parser
 
 	def execute(self):

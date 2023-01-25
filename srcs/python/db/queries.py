@@ -14,10 +14,12 @@ def list_isomorphic_sets(options: QueryOptions=None) -> list:
 	Returns:
 		A list of isomorphic sets.
 	"""
-	rows = IsoSet.select().execute()
+	rows = IsIso.select(fn.COUNT(IsoSet.nauty_sign))
+	
+	rows = IsoSet.select(IsoSet.id, IsoSet.mult_bound, fn.COUNT(IsIso.id_mol).alias('count')).join(IsIso, on=(IsIso.id_set == IsoSet.id)).group_by(IsIso.id_set)
 	result = []
 	for elem in rows :
-		result.append({"id": elem.id, "mult_bound": elem.mult_bound, "nauty_sign": elem.nauty_sign})
+		result.append({"id": elem.id, "mult_bound": elem.mult_bound, "nb_molecules": elem.count})
 	return result
 
 def list_isomorphic_sets_of_molecule(id_mol: int, options: QueryOptions=None) -> list:
