@@ -132,4 +132,4 @@ def list_set_isomorph_mol(molecule_reference)-> list:
 def list_set_isomorph()-> list: 
 	# Test if the molecule exists and return the list of isomorphic group of molecules
 		list_all_isomorphic_set=queries.list_isomorphic_sets()
-		return list_all_isomorphic_set # TODO : change the return format (actual peewee.ModelObjectCursorWrapper)
+		return list_all_isomorphic_set

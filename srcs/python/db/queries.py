@@ -14,8 +14,11 @@ def list_isomorphic_sets(options: QueryOptions=None) -> list:
 	Returns:
 		A list of isomorphic sets.
 	"""
-	# TODO : return peewee.ModelObjectCursorWrapper object
-	return IsIso.select().execute()
+	rows = IsoSet.select().execute()
+	result = []
+	for set in rows :
+		result.append({"id": set.id, "nauty_sign": set.nauty_sign, "mult_bound": set.mult_bound})
+	return result
 
 def list_isomorphic_sets_of_molecule(id_mol: int, options: QueryOptions=None) -> list:
 	"""List all the isomorphic sets of a molecule.
@@ -29,7 +32,10 @@ def list_isomorphic_sets_of_molecule(id_mol: int, options: QueryOptions=None) ->
 	"""
 	# TODO: return SQL instructions
 	rows = IsoSet.select(IsoSet.id, IsoSet.nauty_sign, IsoSet.mult_bound).join(IsIso, on=(IsIso.id_set == IsoSet.id)).where(IsIso.id_mol == id_mol)
-	return rows
+	result = []
+	for elem in rows :
+		result.append({"id": elem.id, "nauty_sign": elem.nauty_sign, "mult_bound": elem.mult_bound})
+	return result
 
 def list_molecules(options: QueryOptions=None) -> list:
 	"""List all the molecules in the database.
@@ -40,8 +46,12 @@ def list_molecules(options: QueryOptions=None) -> list:
 	Returns:
 		A list of molecules.
 	"""
-	# TODO : return peewee.ModelObjectCursorWrapper object
-	return DbMol.select().execute()
+	rows = DbMol.select().execute()
+	result = []
+	for elem in rows :
+		result.append({"id": elem.id, "name": elem.name, "nb_atoms": elem.nb_atoms})
+	return result
+
 
 def list_molecules_in_set(id_set: int, options: QueryOptions=None) -> list:
 	"""List all the molecules in a set.
@@ -55,7 +65,10 @@ def list_molecules_in_set(id_set: int, options: QueryOptions=None) -> list:
 	"""
 	# TODO: return SQL instructions
 	rows = DbMol.select(DbMol.id, DbMol.name, DbMol.nb_atoms).join(IsIso, on=(IsIso.id_mol == DbMol.id)).where(IsIso.id_set == id_set)
-	return rows
+	result = []
+	for elem in rows :
+		result.append({"id": elem.id, "name": elem.name, "nb_atoms": elem.nb_atoms})
+	return result
 
 def find_molecules(query: str, options: QueryOptions=None) -> list:
 	"""Search a molecule in the database by name.
