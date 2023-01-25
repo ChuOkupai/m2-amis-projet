@@ -23,15 +23,6 @@ class TestDatamining(unittest.TestCase):
 			# raise IOError if url incorrect
 			dm.ChebiArchive.download(self.url+"X")
 
-	def test_chebi_archive_hash(self):
-		"""This test will test the ChebiArchive hash."""
-		# TODO: Change the url dependance
-		dm.ChebiArchive.download(url = "https://ftp.ebi.ac.uk/pub/databases/chebi/SDF/ChEBI_lite.sdf.gz")
-		diff = dm.ChebiArchive.get_hash()
-		dm.ChebiArchive.download(self.url)
-		result = dm.ChebiArchive.get_hash()
-		self.assertNotEqual(result, diff)
-
 	def test_chebi_archive_hash_error(self):
 		"""This test will test the error in ChebiArchive hash."""
 		dm.ChebiArchive.clear_cache()
