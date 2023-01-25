@@ -34,7 +34,7 @@ class Compare:
 		bonds_frequency = Graph.get_bonds_frequency(self._molecule1,self._molecule2)
 		return self.khi2(bonds_frequency)
 
-	def khi2(self, distr) -> tuple:
+	def khi2(self, distr):
 		"""Get the distributions.
 
 		Returns:
@@ -69,15 +69,15 @@ class Compare:
 					res *= res
 					res /= (distr2[k]/count2inv)
 					suminv += res
-			return (1- chi2.cdf(sum, ddl),1- chi2.cdf(suminv, ddl))
+			return 1- chi2.cdf(sum, ddl),1- chi2.cdf(suminv, ddl)
 		else : # If one value to compare
 			k1 = distr1.keys()
 			k2 = distr2.keys()
 			if k1[0] == k2[0]:
-				return (1.0,0.0)
-			return (0.0,0.0)
+				return 1.0, 0.0
+			return 0.0, 0.0
 
-	def mcis(self) -> float:
+	def mcis(self):
 		"""Get the maximum common induced subgraph.
 
 		Returns:
@@ -92,5 +92,5 @@ class Compare:
 			alpha_b = self._molecule2.number_of_edges()+self._molecule2.number_of_nodes()
 			res = alpha_m * alpha_m  # square
 			res /= (alpha_a*alpha_b)
-			return res
-		return 0.0
+			return g_mcis, res
+		return None, 0.0

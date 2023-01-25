@@ -55,4 +55,7 @@ class TestApi(unittest.TestCase):
 		conf2.set("test",expect_value)
 		conf2.save()
 
-	
+	def test_search(self):
+		"""This test the search action."""
+		res = api.search("#c")
+		self.assertGreater(len(res), 0)

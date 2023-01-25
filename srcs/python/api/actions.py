@@ -6,7 +6,8 @@ from python.common import constants
 from python.datamining import ChebiArchive, ChebiDatabase, Graph, Molecule
 from python.db import queries
 from python.similarity import Compare
-
+from matplotlib import pyplot as plt
+import numpy as np
 
 def sync_database():
 	"""Update the database.
@@ -89,31 +90,48 @@ def update_molecule(mol: Molecule) ->bool:
 		return True
 	return False
 
-def generate_molecules_distribution():
-	"""Generates the molecules distribution.
-
-	TODO: Complete the description.
-	"""
-	# return ?
-
 def compare_frequency(molecule1_id : int, molecule2_id : int):
 	# Execute
 	# Init the compare class
 	comp = Compare(molecule1_id,molecule2_id)
 	# Show the molecules
-	Graph.show_mol(comp._molecule1, comp._colors1)
-	Graph.show_mol(comp._molecule2, comp._colors2)
+	Graph.show_mols(G1=comp._molecule1, node_colors1=comp._colors1, G2=comp._molecule2, node_colors2=comp._colors2)
 	return (comp.get_atoms_frequency(), comp.get_bonds_frequency())
 
 def get_mcis(molecule1_id : int, molecule2_id : int):
-	# Execute
+	# Search MCIS and compute Raymond similarity
 	comp = Compare(molecule1_id,molecule2_id)
 	return comp.mcis()
-	
-	
+
+def show_graph(mol_id : int):
+	G, colors = Graph.get_graph_from_file(mol_id)
+	Graph.show_mol(G, colors)
+
+def show_mcis(g_mcis):
+	colors = Graph.get_colors(g_mcis)
+	Graph.show_mol(g_mcis, colors)
+
+def search(molecule_reference) -> list:
+	molecules = queries.find_molecules(molecule_reference)
+	if len(molecules) > 0:
+		return molecules
+	raise InvalidMoleculeError(molecule_reference)
+
+def show_distrib(multi_bound : int):
+	distrib = queries.distrib(multi_bound==1)
+	distrib = distrib.sort()
+	plt.figure()
+	values = [x+1 for x in range(len(distrib))]
+	plt.bar(x=values, height=distrib)
+	plt.ylabel("Number of molecules")
+	plt.xlabel("Sets of Isomorphs")
+	plt.xticks(values)
+	plt.show()
+	plt.clf()
+	return {'nb_sets':len(distrib), 'nb_molecules': np.cumsum(distrib)[-1]}
+
 def find(molecule_reference) -> Molecule:
 	# Test if molecule identifier or name exists in the database and get it
-	
 	if (molecule_reference.isdigit()):
 		molecule = queries.find_molecule_by_id(int(molecule_reference))	
 	else:

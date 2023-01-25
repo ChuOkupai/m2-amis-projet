@@ -5,7 +5,7 @@ from python.cli.command import Command
 
 
 class FindCommand(Command):
-    """The synchronisation command."""
+    """The find command."""
 
     def __init__(self, args):
         super().__init__(args)
@@ -30,5 +30,6 @@ class FindCommand(Command):
         print("molecule id : ",molecule_info.id)
         print("molecule name : ",molecule_info.name)
         print("number of atoms : ",molecule_info.nb_atoms)
+        actions.show_graph(molecule_info.id)
 
 

@@ -6,6 +6,8 @@ from python.cli.help import HelpCommand
 from python.cli.listIsomorphicSet import ListIsomorphicSetCommand
 from python.cli.quit import QuitCommand
 from python.cli.sync import SyncCommand
+from python.cli.search import SearchCommand
+from python.cli.distrib import DistribCommand
 
 
 class CommandFactory:
@@ -17,7 +19,9 @@ class CommandFactory:
 		'SYNC': SyncCommand,
 		'COMPARE' : CompareCommand,
 		'FIND': FindCommand,
-		'LIST' : ListIsomorphicSetCommand
+		'LIST' : ListIsomorphicSetCommand,
+		'SEARCH' : SearchCommand,
+		'DISTRIB' : DistribCommand
 	}
 
 	@staticmethod

@@ -54,6 +54,17 @@ class TestDb(unittest.TestCase):
 		self.assertEqual("caf", obj2.name)
 		DbMol.delete_by_id(5)
 	
+	def test_find_molecules(self):
+		"""This test is for find_molecules"""
+		obj1 = StructMol(identifier = str(5), name="#caf")
+		obj2 = StructMol(identifier = str(3), name="#caffeine")
+		insert_molecule(obj1)
+		insert_molecule(obj2)
+		result = find_molecules("#caf")
+		self.assertEqual(len(result), 2)
+		DbMol.delete_by_id(5)
+		DbMol.delete_by_id(3)
+
 	def test_find_molecule_by_name(self):
 		"""This test is for find_molecule_by_name"""
 		obj1 = StructMol(identifier = str(5), name="eau")
@@ -125,10 +136,10 @@ class TestDb(unittest.TestCase):
 		obj1 = StructMol(identifier = str(5), name="eau")
 		insert_molecule(obj1)
 		id1 = insert_isoset("signature", False, 5)
-		list = list_isomorphic_sets()
-		self.assertGreater(len(list), 0)
-		list = list_molecules()
-		self.assertGreater(len(list), 0)
+		res= list_isomorphic_sets()
+		self.assertGreater(len(res), 0)
+		res= list_molecules()
+		self.assertGreater(len(res), 0)
 		IsoSet.delete().where(IsoSet.nauty_sign=="signature")
 		DbMol.delete_by_id(5)
 	
@@ -138,10 +149,10 @@ class TestDb(unittest.TestCase):
 		insert_molecule(obj1)
 		id1 = insert_isoset("signature", False, 5)
 		id2 = insert_isoset("signature", True, 5)
-		list = list_isomorphic_sets_of_molecule(5)
-		self.assertTrue(len(list)==2)
-		self.assertTrue(id1 in (list[0].id, list[1].id))
-		self.assertTrue(id2 in (list[0].id, list[1].id))
+		res= list_isomorphic_sets_of_molecule(5)
+		self.assertTrue(len(res)==2)
+		self.assertTrue(id1 in (res[0].get('id'), res[1].get('id')))
+		self.assertTrue(id2 in (res[0].get('id'), res[1].get('id')))
 		IsoSet.delete().where(IsoSet.nauty_sign=="signature")
 		DbMol.delete_by_id(5)
 
@@ -154,12 +165,26 @@ class TestDb(unittest.TestCase):
 		set1 = insert_isoset("signature", False, 5)
 		set2 = insert_isoset("signature", False, 3)
 		self.assertEqual(set1,set2)
-		list = list_molecules_in_set(set1)
-		self.assertTrue(len(list)==2)
-		self.assertTrue(3 in (list[0].id, list[1].id))
-		self.assertTrue(5 in (list[0].id, list[1].id))
+		res= list_molecules_in_set(set1)
+		self.assertTrue(len(res)==2)
+		self.assertTrue(3 in (res[0].get('id'), res[1].get('id')))
+		self.assertTrue(5 in (res[0].get('id'), res[1].get('id')))
 		IsoSet.delete().where(IsoSet.nauty_sign=="signature")
 		DbMol.delete_by_id(3)
 		DbMol.delete_by_id(5)
 
-	
+	def test_distrib(self):
+		"""This test the distribution query"""
+		obj1 = StructMol(identifier = str(5), name="eau")
+		obj2 = StructMol(identifier = str(3), name="caf")
+		insert_molecule(obj1)
+		insert_molecule(obj2)
+		set1 = insert_isoset("signature", False, 5)
+		set2 = insert_isoset("signature", False, 3)
+		self.assertEqual(set1,set2)
+		res = distrib(False)
+		self.assertGreater(len(res),0)
+		self.assertEqual(res[0],2)
+		IsoSet.delete().where(IsoSet.nauty_sign=="signature")
+		DbMol.delete_by_id(3)
+		DbMol.delete_by_id(5)

@@ -7,7 +7,7 @@ from python.cli.exceptions import InvalidMoleculeError
 
 
 class CompareCommand(Command):
-    """The synchronisation command."""
+    """The compare command."""
 
     def __init__(self, args):
         super().__init__(args)
@@ -35,13 +35,14 @@ class CompareCommand(Command):
             raise InvalidMoleculeError(mol1_ref+" "+mol2_ref)
         atoms_frequency, bonds_frequency = actions.compare_frequency(molecule1.id, molecule2.id)
         if (self.args.option =='mcis'):
-            mcis = actions.get_mcis(molecule1.id, molecule2.id)
+            g_mcis, mcis_value = actions.get_mcis(molecule1.id, molecule2.id)
 
         print("comparisons between molecule ",mol1_ref ," and molecule ",mol2_ref, " : ")
         print("atoms frequency :",atoms_frequency)
         print("bonds frequency :",bonds_frequency)
 
         if (self.args.option =='mcis'):
-            print("maximum subgraph ratio :", mcis)
+            print("maximum subgraph ratio :", mcis_value)
+            actions.show_mcis(g_mcis)
 
 
