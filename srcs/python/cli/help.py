@@ -1,6 +1,8 @@
-from python.cli.command import Command
 from argparse import ArgumentParser
+
 import python.cli.commandfactory as cmds
+from python.cli.command import Command
+
 
 class HelpCommand(Command):
 	"""The help command."""

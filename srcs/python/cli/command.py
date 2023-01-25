@@ -1,6 +1,8 @@
-from python.cli.exceptions import InvalidCommandError
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser
+
+from python.cli.exceptions import InvalidCommandError
+
 
 class Command(ABC):
 	"""The base class for all commands."""

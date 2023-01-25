@@ -1,7 +1,11 @@
-from python.api import Config
-from python.cli.commandfactory import CommandFactory, CommandNotFoundError
-from python.cli.command import InvalidCommandError
-import readline, sys
+import readline
+import sys
+from parser import ParserError
+
+from python.api.config import Config
+from python.cli.commandfactory import CommandFactory
+from python.cli.exceptions import *
+
 
 class Application:
 	"""The main application class."""
@@ -44,6 +48,12 @@ class Application:
 			print(e, file=sys.stderr)
 			return None
 		except InvalidCommandError as e:
+			return 1
+		except ParserError as e:
+			print("Unexpected format of file")
+			return 1
+		except (InvalidTableError, IOError, FileNotFoundError, KeyError, TypeError) as e:
+			print(e)
 			return 1
 
 	def run(self):

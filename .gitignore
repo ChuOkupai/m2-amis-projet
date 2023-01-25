@@ -1,5 +1,5 @@
 # Project related files
-data/database.db
+data/database.*
 data/chebi*
 data/molecules/
 
