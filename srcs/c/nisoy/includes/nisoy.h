@@ -1,8 +1,8 @@
 #pragma once
+#include "nausparse.h"
 
-/**
- * @brief Returns the square of a number.
- * @param x The number to square.
- * @return The square of x.
+/** Generate a molecule from a file.
+ * @param path The path to the file
+ * @returns -1 if an error occured, 0 otherwise
  */
-int square(int x);
+int generateMolecule(const char *path);
