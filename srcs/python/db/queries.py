@@ -14,8 +14,6 @@ def list_isomorphic_sets(options: QueryOptions=None) -> list:
 	Returns:
 		A list of isomorphic sets.
 	"""
-	rows = IsIso.select(fn.COUNT(IsoSet.nauty_sign))
-	
 	rows = IsoSet.select(IsoSet.id, IsoSet.mult_bound, fn.COUNT(IsIso.id_mol).alias('count')).join(IsIso, on=(IsIso.id_set == IsoSet.id)).group_by(IsIso.id_set)
 	result = []
 	for elem in rows :
@@ -230,9 +228,9 @@ def insert_isoset(sign, mult_bound: bool, id_new_mol, options:QueryOptions=None)
 			isoset = IsoSet.create(nauty_sign=sign, mult_bound=mult_bound)
 		else :
 			isoset = rows[0]
-		rows = IsIso.select().where(IsIso.id_set==isoset.id, IsIso.id_mol==id_new_mol)
+		rows = IsIso.select().where(IsIso.id_set==isoset.id, IsIso.id_mol==int(id_new_mol))
 		if len(rows)==0:
-			link = IsIso.create(id_set=isoset.id, id_mol=id_new_mol)
+			link = IsIso.create(id_set=isoset.id, id_mol=int(id_new_mol))
 		else :
 			link = rows[0]
 		return isoset.id
@@ -251,7 +249,7 @@ def distrib(mult_bound: bool, options:QueryOptions=None) ->list :
 		
 	"""
 	result = []
-	rows = IsIso.select(fn.COUNT(IsoSet.nauty_sign).alias('count')).join(IsoSet, on=(IsIso.id_set == IsoSet.id)).where(IsoSet.mult_bound == mult_bound).group_by(IsoSet.nauty_sign)
+	rows = IsoSet.select(IsoSet.id, fn.COUNT(IsIso.id_mol).alias('count')).join(IsIso, on=(IsIso.id_set == IsoSet.id)).where(IsoSet.mult_bound == mult_bound).group_by(IsIso.id_set)
 	for elem in rows :
 		result.append(elem.count)
 	return result

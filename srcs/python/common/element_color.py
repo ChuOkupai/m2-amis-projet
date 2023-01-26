@@ -1,5 +1,8 @@
 # Coloration for Jmol programm hex RGB string
 ELEMENTS ={}
+ELEMENTS["X"] = '#ffffff'
+ELEMENTS["R"] = '#ffffff'
+ELEMENTS["*"] = '#ffffff'
 ELEMENTS["H"] = '#ffffff'
 ELEMENTS["He"] = '#d9ffff'
 ELEMENTS["Li"] = '#cc80ff'

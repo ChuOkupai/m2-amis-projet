@@ -1,6 +1,7 @@
 from os import remove
-from os.path import exists
-import shutil
+from os.path import exists, join
+import shutil, hashlib
+import subprocess as sb
 
 from python.api import config
 from python.cli.exceptions import InvalidTableError
@@ -88,7 +89,33 @@ def update_molecule(mol: Molecule) ->bool:
 	path = mol.to_file()
 	if path : # Check if the molecule are written
 		queries.insert_molecule(mol)
-		# TODO: Use the nauty module to find the isomorphic sets
+		# Application de Nisoy
+		result = sb.run(["./srcs/c/nisoy/nisoy", join(constants.MOLECULES_PATH,str(mol.identifier)+".txt")], capture_output=True)
+		if result.stderr == b'':
+			list_sign = result.stdout.replace(b',',b'')
+			list_sign = list_sign.replace(b"\n",b'')
+			# Hachage de la signature.
+			BUF_SIZE = 65536
+			sha256 = hashlib.sha256()
+			i = 0
+			data = None
+			while i < len(list_sign):
+				if i+BUF_SIZE > len(list_sign):
+					data = list_sign[i:-1]
+					i+=BUF_SIZE
+				else :
+					data = list_sign[i:i+BUF_SIZE]
+					i+=BUF_SIZE
+				if data != None :
+					if type(data)==str:
+						data = bytes(data, encoding='utf-8')
+					sha256.update(data)
+			hash = sha256.hexdigest()
+			# Ajoute l'isomorphisme de modélisation simple
+			res = queries.insert_isoset(hash, False, mol.identifier)
+			# TODO : Traiter l'isomorphisme de modélisation multi_bound
+		else : 
+			raise IOError("canonic",mol.identifier)
 		return True
 	return False
 
@@ -120,17 +147,27 @@ def search(molecule_reference) -> list:
 	raise InvalidTableError(molecule_reference)
 
 def show_distrib(multi_bound : int):
-	distrib = queries.distrib(multi_bound==1)
-	distrib = distrib.sort()
-	plt.figure()
-	values = [x+1 for x in range(len(distrib))]
-	plt.bar(x=values, height=distrib)
-	plt.ylabel("Number of molecules")
-	plt.xlabel("Sets of Isomorphs")
-	plt.xticks(values)
-	plt.show()
-	plt.clf()
-	return {'nb_sets':len(distrib), 'nb_molecules': np.cumsum(distrib)[-1]}
+	test = int(multi_bound)==1
+	distrib = queries.distrib(test)
+	if distrib != None:
+		distrib.sort()
+		plt.figure()
+		plt.title("Distribution of molecules in sets")
+		values = [x+1 for x in range(len(distrib))]
+		plt.plot(distrib)
+		plt.yscale("log")
+		plt.ylabel("Number of molecules")
+		plt.xlabel("Sets of Isomorphs")
+		plt.show()
+		plt.figure()
+		plt.title("Histogram of sets sizes")
+		plt.hist(x=distrib, range=(min(distrib),max(distrib)), bins=20)
+		plt.yscale("log")
+		plt.ylabel("Number of set")
+		plt.xlabel("Number of isomorphs in sets")
+		plt.show()
+		return {'distrib':distrib,'nb_sets':len(distrib), 'nb_molecules': np.cumsum(distrib)[-1]}
+	return {'distrib':[],'nb_sets':0, 'nb_molecules': 0}
 
 def find(molecule_reference) -> Molecule:
 	# Test if molecule identifier or name exists in the database and get it

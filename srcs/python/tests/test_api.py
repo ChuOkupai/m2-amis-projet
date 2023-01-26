@@ -5,6 +5,8 @@ from os.path import isdir, isfile, join
 from python import api
 from python.common import constants
 from python.datamining import ChebiArchive as ChA
+from python.datamining import Molecule
+from python.db import Molecule as DbMol
 
 
 class TestApi(unittest.TestCase):

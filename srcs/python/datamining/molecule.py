@@ -90,7 +90,7 @@ class Molecule:
 		"""
 		if not isdir(constants.MOLECULES_PATH):
 			mkdir(constants.MOLECULES_PATH)
-		if self.name!=None and self.identifier!=None and len(self._bonds) > 1:
+		if self.name!=None and self.identifier!=None and len(self._bonds) > 0:
 			try :
 				path = join(constants.MOLECULES_PATH, str(self.identifier)+".txt")
 				f_out = open(path, "w")

@@ -76,6 +76,7 @@ class Graph:
 		Args:
 			G (nx.Graph): The graph representing the molecule.
 		"""
+		plt.clf()
 		pos = nx.spring_layout(G)
 		node_labels = nx.get_node_attributes(G, 'label')
 		edge_labels = nx.get_edge_attributes(G, 'weight')
@@ -84,7 +85,7 @@ class Graph:
 		nx.draw_networkx_labels(G, pos, labels=node_labels)
 		nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels)
 		plt.show()
-		plt.clf()
+		
 
 	def show_mols(G1, G2, node_colors1=None, node_colors2=None):
 		pos1 = nx.spring_layout(G1)
@@ -95,6 +96,7 @@ class Graph:
 		edge_labels2 = nx.get_edge_attributes(G2, 'weight')
 
 		plt.figure(figsize=(10,5))
+		plt.clf()
 		plt.subplot(121)
 		nx.draw_networkx_nodes(G1, pos1, node_color=node_colors1, edgecolors='#000000')
 		nx.draw_networkx_edges(G1, pos1, edge_color='#000000')
@@ -107,7 +109,7 @@ class Graph:
 		nx.draw_networkx_labels(G2, pos2, labels=node_labels2)
 		nx.draw_networkx_edge_labels(G2, pos2, edge_labels=edge_labels2)
 		plt.show()
-		plt.clf()
+		
 	
 	def get_atoms_frequency(G1, G2) -> dict:
 		"""Get the frequency of atoms in two graphs G1 and G2.
