@@ -27,7 +27,7 @@ it is necessary to check they are correct.
 #define HAS_STDIO_UNLOCK 1  /* Whether there are getc_unlocked, */
                                /* putc_unlocked,flockfile and funlockfile */
 
-#define DEFAULT_WORDSIZE 32
+#define DEFAULT_WORDSIZE 0
 
 /* Note that thread-local storage (TLS) is only useful for running nauty
    in multiple threads and will slow it down a little otherwise. */
@@ -54,7 +54,7 @@ it is necessary to check they are correct.
 
 #define USE_ANSICONTROLS 0 
                           /* whether --enable-ansicontrols is used */
-#define FLEX_ARRAY_OK 0
+#define FLEX_ARRAY_OK 1
  /* whether the compiler supports flexible array members in structures */
 
 #define _FILE_OFFSET_BITS 0
@@ -66,11 +66,11 @@ it is necessary to check they are correct.
 
 /* Support of gcc extensions __builtin_clz, __builtin_clzl, __builtin_clzll */
 #ifndef HAVE_HWLZCNT
-#define HAVE_HWLZCNT 0
+#define HAVE_HWLZCNT 1
 #endif
-#define HAVE_CLZ 0
-#define HAVE_CLZL 0
-#define HAVE_CLZLL 0
+#define HAVE_CLZ 1
+#define HAVE_CLZL 1
+#define HAVE_CLZLL 1
 
 /* Support of gcc extensions
       __builtin_popcount, __builtin_popcountl, __builtin_popcountll
@@ -81,11 +81,11 @@ it is necessary to check they are correct.
    for the Intel compiler icc.  These need no compiler switch.
 */
 #ifndef HAVE_HWPOPCNT
-#define HAVE_HWPOPCNT 0
+#define HAVE_HWPOPCNT 1
 #endif
-#define HAVE_POPCNT 0
-#define HAVE_POPCNTL 0
-#define HAVE_POPCNTLL 0
+#define HAVE_POPCNT 1
+#define HAVE_POPCNTL 1
+#define HAVE_POPCNTLL 1
 #define HAVE_MMPOP32 0
 #define HAVE_MMPOP64 0
 
