@@ -1,14 +1,29 @@
 from python.cli.command import Command
+from python.cli.comparecommand import CompareCommand
 from python.cli.exceptions import CommandNotFoundError
+from python.cli.find import FindCommand
 from python.cli.help import HelpCommand
+from python.cli.listIsomorphicSet import ListIsomorphicSetCommand
 from python.cli.quit import QuitCommand
+from python.cli.sync import SyncCommand
+from python.cli.search import SearchCommand
+from python.cli.distrib import DistribCommand
+from python.cli.reset import ResetCommand
+
 
 class CommandFactory:
 	"""The command factory."""
 
 	commands = {
 		'HELP': HelpCommand,
-		'QUIT': QuitCommand
+		'QUIT': QuitCommand,
+		'SYNC': SyncCommand,
+		'COMPARE' : CompareCommand,
+		'FIND': FindCommand,
+		'LIST' : ListIsomorphicSetCommand,
+		'SEARCH' : SearchCommand,
+		'DISTRIB' : DistribCommand,
+		'RESET' : ResetCommand
 	}
 
 	@staticmethod

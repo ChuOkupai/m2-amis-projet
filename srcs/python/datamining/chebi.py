@@ -6,9 +6,9 @@ from os.path import exists
 from parser import ParserError
 
 import requests
-from requests.exceptions import RequestException, HTTPError
 from python.common import constants
 from python.datamining.molecule import Molecule
+from requests.exceptions import RequestException
 
 
 class ChebiArchive:
@@ -104,14 +104,17 @@ class ChebiDatabase:
 				f_out.close()
 			raise IOError
 
-	def __init__(self):
+	def __init__(self, path=constants.CHEBI_DATABASE_PATH):
 		"""Open the ChEBI database file.
+
+		Args:
+			path: The PATH to the ChEBI database.
 
 		Raises:
 			IOError: If the file cannot be opened.
 		"""
 		try :
-			self.file = open(constants.CHEBI_DATABASE_PATH, 'r')
+			self.file = open(path, 'r')
 		except (OSError, FileNotFoundError, Exception):
 			if self.file:
 				self.file.close()

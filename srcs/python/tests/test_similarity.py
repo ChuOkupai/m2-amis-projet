@@ -1,5 +1,7 @@
 import unittest
+
 from python import similarity
+
 
 class TestSimilarity(unittest.TestCase):
 	"""This class contains the unit tests for the similarity module."""

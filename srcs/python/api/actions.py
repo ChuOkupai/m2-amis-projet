@@ -1,9 +1,15 @@
-from os.path import exists, join
+from os import remove
+from os.path import exists
+import shutil
 
-from python.datamining import ChebiArchive, ChebiDatabase, Molecule
 from python.api import config
+from python.cli.exceptions import InvalidTableError
 from python.common import constants
-
+from python.datamining import ChebiArchive, ChebiDatabase, Graph, Molecule
+from python.db import queries, Connection, Molecule as DbMol, IsomorphicSet, IsIsomorphic
+from python.similarity import Compare
+from matplotlib import pyplot as plt
+import numpy as np
 
 def sync_database():
 	"""Update the database.
@@ -74,23 +80,96 @@ def update_molecule(mol: Molecule) ->bool:
 	Raises:
 		IOError: If the molecule file cannot be writed.
 	"""
-	if mol.identifier == "test" :# TODO: Test if molecule identifier in database
-		if mol.get_hash() == "test" :# TODO: Test if hash equal
+	if queries.contains_molecule(int(mol.identifier)) :
+		db_mol = queries.find_molecule_by_id(int(mol.identifier))
+		if mol.get_hash() == db_mol.hash :
 			return False
 	# Write the molecule file
 	path = mol.to_file()
 	if path : # Check if the molecule are written
-		# TODO: Use the database module to insert the molecules in the database
-		mol.identifier
-		mol.name
-		mol.get_hash()
+		queries.insert_molecule(mol)
 		# TODO: Use the nauty module to find the isomorphic sets
 		return True
 	return False
 
-def generate_molecules_distribution():
-	"""Generates the molecules distribution.
+def compare_frequency(molecule1_id : int, molecule2_id : int):
+	# Execute
+	# Init the compare class
+	comp = Compare(molecule1_id,molecule2_id)
+	# Show the molecules
+	Graph.show_mols(G1=comp._molecule1, node_colors1=comp._colors1, G2=comp._molecule2, node_colors2=comp._colors2)
+	return (comp.get_atoms_frequency(), comp.get_bonds_frequency())
 
-	TODO: Complete the description.
-	"""
-	# return ?
+def get_mcis(molecule1_id : int, molecule2_id : int):
+	# Search MCIS and compute Raymond similarity
+	comp = Compare(molecule1_id,molecule2_id)
+	return comp.mcis()
+
+def show_graph(mol_id : int):
+	G, colors = Graph.get_graph_from_file(mol_id)
+	Graph.show_mol(G, colors)
+
+def show_mcis(g_mcis):
+	colors = Graph.get_colors(g_mcis)
+	Graph.show_mol(g_mcis, colors)
+
+def search(molecule_reference) -> list:
+	molecules = queries.find_molecules(molecule_reference)
+	if len(molecules) > 0:
+		return molecules
+	raise InvalidTableError(molecule_reference)
+
+def show_distrib(multi_bound : int):
+	distrib = queries.distrib(multi_bound==1)
+	distrib = distrib.sort()
+	plt.figure()
+	values = [x+1 for x in range(len(distrib))]
+	plt.bar(x=values, height=distrib)
+	plt.ylabel("Number of molecules")
+	plt.xlabel("Sets of Isomorphs")
+	plt.xticks(values)
+	plt.show()
+	plt.clf()
+	return {'nb_sets':len(distrib), 'nb_molecules': np.cumsum(distrib)[-1]}
+
+def find(molecule_reference) -> Molecule:
+	# Test if molecule identifier or name exists in the database and get it
+	if (molecule_reference.isdigit()):
+		molecule = queries.find_molecule_by_id(int(molecule_reference))	
+	else:
+		molecule = queries.find_molecule_by_name(molecule_reference)
+	if molecule != None:
+		return molecule
+	raise InvalidTableError(molecule_reference)
+
+def list_set_isomorph()-> list: 
+	# Test if the molecule exists and return the list of isomorphic group of molecules
+		list_all_isomorphic_set=queries.list_isomorphic_sets()
+		return list_all_isomorphic_set
+
+def list_set_isomorph_of_mol(molecule_reference)-> list: 
+	# Test if the molecule exists and return the list of isomorphic group of molecules
+	molecule = find(molecule_reference)
+	if (molecule is not None):
+		list_isomorphic_set=queries.list_isomorphic_sets_of_molecule(molecule.id)
+		return list_isomorphic_set
+
+def list_mol_of_set_isomorph(set_id)-> list:
+	sets = None
+	if (set_id.isdigit()):
+		sets = queries.list_molecules_in_set(int(set_id))
+	if sets != None:
+		return sets
+	raise InvalidTableError(set_id)
+
+def clean():
+	# Erase database and datafile
+	if exists(constants.CHEBI_HASH_PATH): remove(constants.CHEBI_HASH_PATH)
+	if exists(constants.DB_PATH): remove(constants.DB_PATH)
+	if exists(constants.CHEBI_DATABASE_PATH): remove(constants.CHEBI_DATABASE_PATH)
+	if exists(constants.CHEBI_ARCHIVE_PATH): remove(constants.CHEBI_ARCHIVE_PATH)
+	if exists(constants.MOLECULES_PATH): shutil.rmtree(constants.MOLECULES_PATH)
+	# Re init the database's tables
+	db = Connection.get_instance()
+	db.create_tables([DbMol, IsIsomorphic, IsomorphicSet])
+	db.close()

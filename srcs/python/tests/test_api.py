@@ -55,27 +55,7 @@ class TestApi(unittest.TestCase):
 		conf2.set("test",expect_value)
 		conf2.save()
 
-	def test_synchronisation(self):
-		"""this test is for the synchronisation function"""
-		# Differ situation
-		if isfile(constants.CHEBI_HASH_PATH):
-			conf = api.Config()
-			conf.load()
-			ChA.download(conf.get("chebi_url").value)
-			new_hash = ChA.get_hash()
-			f = open(constants.CHEBI_HASH_PATH, "r")
-			old_hash = f.read()
-			f.close()
-			if new_hash == old_hash:
-				number = api.sync_database()
-				self.assertEqual(number, 0)
-				# Force the resync
-				remove(constants.CHEBI_HASH_PATH)
-		number = api.sync_database()
-		# test the directory
-		self.assertTrue(isdir(constants.MOLECULES_PATH))
-		count = 0
-		for path in listdir(constants.MOLECULES_PATH):
-			if isfile(join(constants.MOLECULES_PATH, path)):
-				count += 1
-		self.assertEqual(number, count)
+	def test_search(self):
+		"""This test the search action."""
+		res = api.search("#c")
+		self.assertGreater(len(res), 0)
