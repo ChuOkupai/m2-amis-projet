@@ -83,39 +83,55 @@ static int constructGraph(sparsegraph *g, t_edge *edges) {
  * @param edges The edges
  * @returns -1 if an error occured, 0 otherwise
 */
-// static int constructGraphWithBounds(sparsegraph *g, t_edge *edges) {
-// 	static const int avTable[] = { 0, 1, 2, 3, 1, 3, 3, 1 };
-// 	size_t av = 0; /* Additional vertices */
-// 	for (size_t i = 0; i < g->nde / 2; ++i)
-// 		av += avTable[edges[i].type];
-// 	size_t ae = 2 * av; /* Additional edges */
-// 	size_t nv = g->nv, nde = g->nde;
-// 	size_t *neighborsIndex = malloc(nv * sizeof(size_t));
-// 	if (!neighborsIndex)
-// 		return -1;
-// 	SG_ALLOC(*g, nv + av, nde + ae, "malloc");
-// 	bzero(g->d, g->dlen * sizeof(*g->d));
-// 	for (size_t i = 0; i < nde; ++i) {
-// 		g->d[edges[i].from] += avTable[edges[i].type] + 1;
-// 		g->d[edges[i].to] += avTable[edges[i].type] + 1;
-// 	}
-// 	for (size_t i = nde; i < g->nde; ++i)
-// 		g->d[i] = 2;
-// 	if (g->vlen) {
-// 		g->v[0] = 0;
-// 		neighborsIndex[0] = 0;
-// 	}
-// 	for (int i = 1; i < g->nv; ++i) {
-// 		g->v[i] = g->v[i - 1] + g->d[i - 1];
-// 		neighborsIndex[i] = g->v[i];
-// 	}
-// 	for (size_t i = 0; i < g->nde / 2; ++i) {
-// 		g->e[neighborsIndex[edges[i].from]++] = edges[i].to;
-// 		g->e[neighborsIndex[edges[i].to]++] = edges[i].from;
-// 	}
-// 	free(neighborsIndex);
-// 	return 0;
-// }
+static int constructGraphWithBounds(sparsegraph *g, t_edge *edges) {
+	static const int avTable[] = { 0, 1, 2, 3, 1, 3, 3, 1 };
+	size_t av = 0; /* Additional vertices */
+	size_t ae = 0; /* Additional edges */
+	for (size_t i = 0; i < g->nde / 2; ++i) {
+		av += avTable[edges[i].type];
+		ae += 4 * avTable[edges[i].type];
+	}
+	int nv = g->nv, nde = g->nde;
+	size_t *neighborsIndex = malloc(nv * sizeof(size_t));
+	if (!neighborsIndex)
+		return -1;
+	SG_ALLOC(*g, nv + av, nde + ae, "malloc");
+	bzero(g->d, g->dlen * sizeof(*g->d));
+	for (int i = 0; i < nde / 2; ++i) {
+		int avi = avTable[edges[i].type];
+		if (!avi)
+			avi = 1;
+		g->d[edges[i].from] += avi;
+		g->d[edges[i].to] += avi;
+	}
+	for (int i = nv; i < g->nv; ++i)
+		g->d[i] = 2;
+	if (g->vlen) {
+		g->v[0] = 0;
+		neighborsIndex[0] = 0;
+	}
+	for (int i = 1; i < g->nv; ++i) {
+		g->v[i] = g->v[i - 1] + g->d[i - 1];
+		if (i < nv)
+			neighborsIndex[i] = g->v[i];
+	}
+	for (int i = 0, j = g->nde - 2 * av, k = nv; i < nde / 2; ++i) {
+		int avi = avTable[edges[i].type];
+		if (avi) {
+			while (avi--) {
+				g->e[neighborsIndex[edges[i].from]++] = k;
+				g->e[neighborsIndex[edges[i].to]++] = k;
+				g->e[j++] = edges[i].from;
+				g->e[j++] = edges[i].to;
+			}
+		} else {
+			g->e[neighborsIndex[edges[i].from]++] = edges[i].to;
+			g->e[neighborsIndex[edges[i].to]++] = edges[i].from;
+		}
+	}
+	free(neighborsIndex);
+	return 0;
+}
 
 /** Outputs the canonical form of a molecule.
  * @param g The graph of the molecule
@@ -177,5 +193,12 @@ int generateMolecule(const char *path) {
 	}
 	getCanonicalGraph(&g);
 	SG_FREE(g);
+	if (constructGraphWithBounds(&g, edges)) {
+		free(edges);
+		return parseError(f, INVALID_FORMAT);
+	}
+	getCanonicalGraph(&g);
+	SG_FREE(g);
+	free(edges);
 	return 0;
 }
